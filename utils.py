@@ -2,6 +2,7 @@ import json
 import os
 from PIL import Image
 import io
+import queue
 
 
 def save_results(output_queue, output_dir):

@@ -57,7 +57,7 @@ Ultimately, you'd want to modify the codebase to suit your needs. Below, I provi
 ```bash
 .
 ├── config.py -- specifies the prompt to be used to generate the captions and model id.
-├── data_processing.py -- webdataset loading and processing code.
+├── data_processing.py -- webdataset loading and processing code including watermark detection and caching.
 ├── main.py -- main entrypoint.
 ├── model.py -- loads the vllm engine and houses the simple inference function.
 └── utils.py -- misc utilities.

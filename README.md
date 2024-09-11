@@ -1,6 +1,6 @@
 # simple-image-recaptioning
 
-Recaption large (Web)Datasets with `vllm` and save the artifacts. It is NOT a library. It, instead, provides reference points that you're free to use and modify. 
+Recaption large (Web)Datasets with [`vllm`](https://github.com/vllm-project/vllm/) and save the artifacts. It is NOT a library. It, instead, provides reference points that you're free to use and modify. 
 
 I use the code of this repository for my projects and I don't claim this project to be out of the world. If you want to contribute an enhancement feature, you're more than welcome to open a PR. I'd greatly appreciate it. 
 
@@ -61,3 +61,10 @@ Ultimately, you'd want to modify the codebase to suit your needs. Below, I provi
 ├── model.py -- loads the vllm engine and houses the simple inference function.
 └── utils.py -- misc utilities.
 ```
+
+## Acknowledgements
+
+* Thanks to `vllm` for the amazing project.
+* Thanks to `webdataset` for scalability.
+* Thanks to Claude for pairing.
+* Thanks to Hugging Face for letting me explore this and providing GPUs.

@@ -9,7 +9,7 @@ I use the code of this repository for my projects and I don't claim this project
 Install the requirements: `pip install -r requirements.txt`. Then run:
 
 ```bash
-python full_vllm.py \
+python main.py \
     --data_path="https://huggingface.co/datasets/pixparse/cc3m-wds/resolve/main/cc3m-train-0000.tar"
 ```
 
@@ -22,7 +22,7 @@ If you want to use multiple shards then do:
 
 ```bash
 # full CC3M training set
-python full_vllm.py \
+python main.py \
     --data_path="pipe:curl -s -f -L https://huggingface.co/datasets/pixparse/cc3m-wds/resolve/main/cc3m-train-{0000..0575}.tar"
 ```
 

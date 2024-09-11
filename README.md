@@ -47,6 +47,8 @@ I tested the above commands on two A100s.
 
 5. There has to be watermark detection in the data curation pipeline at minimum. Otherwise, it messes up with the generation quality. This happens _during_ dataloading. To not clog the processes, we make use of ONNX fast CPU-based inferencing.
 
+6. Failures can happen during the captioning process so we need to able to avoid duplication. I have added a simple `ExistsFilter` (refer to `data_processing.py`) filter to filter out the existing images that were serialized before interruptions.
+
 ## Code organization and modification
 
 Ultimately, you'd want to modify the codebase to suit your needs. Below, I provide some pointers.

@@ -1,0 +1,10 @@
+Pillow
+numpy
+webdataset
+torch
+torchvision
+timm
+vllm
+transformers
+accelerate
+huggingface_hub

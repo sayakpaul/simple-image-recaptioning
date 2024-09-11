@@ -63,6 +63,13 @@ Ultimately, you'd want to modify the codebase to suit your needs. Below, I provi
 └── utils.py -- misc utilities.
 ```
 
+## Known limitations
+
+Would really appreciate some contributions too :-)
+
+* Better cache management to skip the images that have already been serialized. 
+* Better placement of the watermark detection module. I placed it inside the data pipeline because I wasn't sure how to make gel well with `vllm`. But this restricts higher throughputs a bit. 
+
 ## Acknowledgements
 
 * Thanks to `vllm` for the amazing project.

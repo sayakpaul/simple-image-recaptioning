@@ -40,13 +40,13 @@ I tested the above commands on two A100s.
 
 1. Recaptioning large image datasets has become a da-facto standard for the image generation community. So, I wanted to have a simple-yet-performant utility that would allow me to recaption large image datasets like [CC3M](https://huggingface.co/datasets/pixparse/cc3m-wds). This is why, I chose `vllm` as it provides optimized inference across multiple GPUs off-the-shelf.
 
-2. [`webdataset`](https://github.com/webdataset/webdataset) is a common format used by practitioner to conduct training on large-scale datasets. So, I chose that as an entrypoint. Specifically, I assume that your image-caption pair dataset is already sharded into multiple `webdataset` archives. Refer [here](https://huggingface.co/datasets/pixparse/cc3m-wds) as an example. 
+2. [`webdataset`](https://github.com/webdataset/webdataset) is a common format used by practitioners to conduct training on large-scale datasets. So, I chose that as an entrypoint. Specifically, I assume that your image-caption pair dataset is already sharded into multiple `webdataset` archives. Refer [here](https://huggingface.co/datasets/pixparse/cc3m-wds) as an example. 
 
 3. I need to be able to use multiple GPUs, overlapping communication and computation.
 
-4. There has to be artifacts serialization. This project serializes the original image, original caption, and the predicted caption in separate threads, not blocking the GPU(s).
+4. There has to be artifact serialization. This project serializes the original image, original caption, and the predicted caption in separate threads, not blocking the GPU(s).
 
-5. There has to be watermark detection in the data curation pipeline at minimum. Otherwise, it messes up with the generation quality. This happens _during_ dataloading. To not clog the processes, we make use of ONNX fast CPU-based inferencing.
+5. There has to be watermark detection in the data curation pipeline at minimum. Otherwise, it messes up with the generation quality. In this project, it happens _during_ dataloading. To not clog the processes, we make use of ONNX for fast CPU-based inferencing.
 
 6. Failures can happen during the captioning process so we need to able to avoid duplication. I have added a simple `ExistsFilter` (refer to `data_processing.py`) filter to filter out the existing images that were serialized before interruptions.
 

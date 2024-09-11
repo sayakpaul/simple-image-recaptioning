@@ -21,7 +21,7 @@ def collate_fn(examples, predictor=None):
     }
 
     if predictor is not None:
-        results = predictor.run(inputs["original_images"], num_workers=0, bs=16)
+        results = predictor.run(inputs["original_images"], num_workers=0, bs=16, pbar=False)
         inputs = {key: [item for item, result in zip(inputs[key], results) if result == "clean"] for key in inputs}
 
     return inputs

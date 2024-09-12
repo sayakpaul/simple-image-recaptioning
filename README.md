@@ -63,6 +63,11 @@ Ultimately, you'd want to modify the codebase to suit your needs. Below, I provi
 └── utils.py -- misc utilities.
 ```
 
+## Handy tips
+
+* A good chunk of data processing used `PIL`. Simply replace your `Pillow` installation to use [`Pillow-SIMD`](https://github.com/uploadcare/pillow-simd) for better speed.
+* Use `hf_transfer` for faster downloads from the Hugging Face Hub. Refer [here](https://huggingface.co/docs/huggingface_hub/main/en/package_reference/environment_variables#hfhubenablehftransfer) to know more. 
+
 ## Known limitations
 
 Would really appreciate some contributions too :-)

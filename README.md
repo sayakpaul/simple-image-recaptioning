@@ -42,7 +42,7 @@ I tested the above commands on two A100s.
 
 2. [`webdataset`](https://github.com/webdataset/webdataset) is a common format used by practitioners to conduct training on large-scale datasets. So, I chose that as an entrypoint. Specifically, I assume that your image-caption pair dataset is already sharded into multiple `webdataset` archives. Refer [here](https://huggingface.co/datasets/pixparse/cc3m-wds) as an example. 
 
-3. I need to be able to use multiple GPUs, overlapping communication and computation.
+3. I need to be able to use multiple GPUs, overlapping communication and computation. But this project also works with a single GPU.
 
 4. There has to be artifact serialization. This project serializes the original image, original caption, and the predicted caption in separate threads, not blocking the GPU(s).
 

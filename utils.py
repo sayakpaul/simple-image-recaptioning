@@ -1,3 +1,9 @@
+# Pillow decoding errors for large files.
+# Reference: https://stackoverflow.com/questions/42671252/python-pillow-valueerror-decompressed-data-too-large
+from PIL import PngImagePlugin
+LARGE_ENOUGH_NUMBER = 100
+PngImagePlugin.MAX_TEXT_CHUNK = LARGE_ENOUGH_NUMBER * (1024**2)
+
 import json
 import os
 from PIL import Image

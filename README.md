@@ -74,6 +74,7 @@ Would really appreciate some contributions too :-)
 
 * Better cache management to skip the images that have already been serialized. 
 * Better placement of the watermark detection module. I placed it inside the data pipeline because I wasn't sure how to make gel well with `vllm`. But this restricts higher throughputs a bit. 
+* Be aware of [this issue](https://github.com/vllm-project/vllm/issues/8421) and [this fix](https://github.com/vllm-project/vllm/pull/8496) in `vllm`. 
 
 ## Acknowledgements
 

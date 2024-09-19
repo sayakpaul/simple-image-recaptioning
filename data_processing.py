@@ -12,7 +12,7 @@ def pil_to_bytes(pil_image, format="PNG"):
         return byte_arr.getvalue()
 
 
-def collate_fn(examples, predictor=None):
+def collate_fn(examples, predictor=None, return_probs=False):
     inputs = {
         "original_images": [sample["original_image"] for sample in examples],
         "img_bytes": [example["img_bytes"] for example in examples],
@@ -21,8 +21,11 @@ def collate_fn(examples, predictor=None):
     }
 
     if predictor is not None:
-        results = predictor.run(inputs["original_images"], num_workers=0, bs=16, pbar=False)
-        inputs = {key: [item for item, result in zip(inputs[key], results) if result == "clean"] for key in inputs}
+        results = predictor.run(inputs["original_images"], num_workers=0, bs=16, pbar=False, return_probs=return_probs)
+        if return_probs and return_probs != "scores":
+            inputs = {key: [item for item, result in zip(inputs[key], results) if result == "clean"] for key in inputs}
+        else:
+            inputs.update({"watermark_scores": results.tolist()})
 
     return inputs
 
@@ -74,6 +77,11 @@ def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):
             "convnext-tiny", fp16=False, device="cpu", return_transforms_only=True
         )
         predictor = WatermarksPredictor("convnext.onnx", transforms, use_onnx=True, device="cpu")
+        # when `detect_watermarks="scores"`, 
+        # we return the softmax scores associated to the "watermarked" classes.
+        return_probs = detect_watermarks 
+    else:
+        return_probs = False
 
     dataset = (
         wds.WebDataset(data_path, handler=wds.warn_and_continue, nodesplitter=nodesplitter)
@@ -83,7 +91,7 @@ def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):
     filter_obj = ExistsFilter(output_dir)
     if filter_obj.current_training_img_hashes:
         dataset = dataset.select(filter_obj)
-    return dataset.batched(batch_size, partial=False, collation_fn=partial(collate_fn, predictor=predictor))
+    return dataset.batched(batch_size, partial=False, collation_fn=partial(collate_fn, predictor=predictor, return_probs=return_probs))
 
 
 def initialize_dataloader(data_path, batch_size, dataloader_num_workers, output_dir, detect_watermarks=False):

@@ -2,6 +2,7 @@ import os
 import queue
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm
+from typing import Union
 import fire
 
 from data_processing import initialize_dataloader
@@ -15,7 +16,7 @@ def main(
     dataloader_num_workers: int = 8,
     output_dir: str = "sample_outputs",
     max_tokens: int = 120,
-    detect_watermarks: bool = False,
+    detect_watermarks: Union[bool, str] = False,
 ):
     vllm_engine, sampling_params = load_vllm_engine(max_tokens=max_tokens)
 
@@ -40,7 +41,12 @@ def main(
             original_captions = batch["original_captions"]
             img_bytes = batch["img_bytes"]
             img_hashes = batch["img_hashes"]
-            output_queue.put((original_captions, outputs, img_bytes, img_hashes))
+            if detect_watermarks:
+                if detect_watermarks != "scores":
+                    output_queue.put((original_captions, outputs, img_bytes, img_hashes))
+                else:
+                    watermark_scores = batch["watermark_scores"]
+                    output_queue.put((original_captions, outputs, img_bytes, img_hashes, watermark_scores))
 
     finally:
         output_queue.put(None)

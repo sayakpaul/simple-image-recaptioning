@@ -47,6 +47,8 @@ def main(
                 else:
                     watermark_scores = batch["watermark_scores"]
                     output_queue.put((original_captions, outputs, img_bytes, img_hashes, watermark_scores))
+            else:
+                output_queue.put((original_captions, outputs, img_bytes, img_hashes))
 
     finally:
         output_queue.put(None)

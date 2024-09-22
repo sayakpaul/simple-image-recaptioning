@@ -36,7 +36,7 @@ def save_results(output_queue, output_dir):
                 
                 if watermark_scores is not None:
                     watermark_score = watermark_scores[i]
-                    watermark_score_dict = {"watermark_score": watermark_score}
+                    watermark_score_dict = {"watermark_score": str(watermark_score)}
                     with open(os.path.join(output_dir, f"{img_hashes[i]}_watermark.json"), "w") as f:
                         json.dump(watermark_score_dict, f, indent=4)
 

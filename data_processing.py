@@ -24,7 +24,7 @@ def collate_fn(examples, predictor=None, return_probs=False):
         results = predictor.run(inputs["original_images"], num_workers=0, bs=16, pbar=False, return_probs=return_probs)
         if return_probs and return_probs != "scores":
             inputs = {key: [item for item, result in zip(inputs[key], results) if result == "clean"] for key in inputs}
-        else:
+        elif return_probs == "scores":
             inputs.update({"watermark_scores": results.tolist()})
 
     return inputs

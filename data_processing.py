@@ -84,7 +84,7 @@ def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):
         return_probs = False
 
     dataset = (
-        wds.WebDataset(data_path, handler=wds.warn_and_continue, nodesplitter=nodesplitter)
+        wds.WebDataset(data_path, handler=wds.warn_and_continue, nodesplitter=nodesplitter, empty_check=False)
         .decode("pil", handler=wds.warn_and_continue)
         .map(preprocess_fn, handler=wds.warn_and_continue)
     )

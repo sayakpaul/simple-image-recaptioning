@@ -72,14 +72,22 @@ def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):
     if detect_watermarks:
         from wmdetection.models import get_watermarks_detection_model
         from wmdetection.pipelines.predictor import WatermarksPredictor
+        from onnxruntime import SessionOptions, GraphOptimizationLevel
+
+        session_options = SessionOptions()
+        session_options.intra_op_num_threads = 1
+        session_options.inter_op_num_threads = 1
+        session_options.graph_optimization_level = GraphOptimizationLevel.ORT_ENABLE_ALL
 
         transforms = get_watermarks_detection_model(
             "convnext-tiny", fp16=False, device="cpu", return_transforms_only=True
         )
-        predictor = WatermarksPredictor("convnext.onnx", transforms, use_onnx=True, device="cpu")
-        # when `detect_watermarks="scores"`, 
+        predictor = WatermarksPredictor(
+            "convnext.onnx", transforms, use_onnx=True, device="cpu", session_options=session_options
+        )
+        # when `detect_watermarks="scores"`,
         # we return the softmax scores associated to the "watermarked" classes.
-        return_probs = detect_watermarks 
+        return_probs = detect_watermarks
     else:
         return_probs = False
 
@@ -91,7 +99,9 @@ def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):
     filter_obj = ExistsFilter(output_dir)
     if filter_obj.current_training_img_hashes:
         dataset = dataset.select(filter_obj)
-    return dataset.batched(batch_size, partial=False, collation_fn=partial(collate_fn, predictor=predictor, return_probs=return_probs))
+    return dataset.batched(
+        batch_size, partial=False, collation_fn=partial(collate_fn, predictor=predictor, return_probs=return_probs)
+    )
 
 
 def initialize_dataloader(data_path, batch_size, dataloader_num_workers, output_dir, detect_watermarks=False):

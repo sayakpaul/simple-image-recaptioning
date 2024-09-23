@@ -34,7 +34,7 @@ You can allow watermark detection by passing `--detect_watermarks`. Note that th
 
 By default, the script will use all the available GPUs. Refer to the `main.py` script for a full list of the supported CLI arguments.
 
-I tested the above commands on two A100s.
+I tested the above commands on two A100s and on eight H100s.
 
 ## Principles
 
@@ -48,11 +48,11 @@ I tested the above commands on two A100s.
 
 5. There has to be watermark detection in the data curation pipeline at minimum. Otherwise, it messes up with the generation quality. In this project, it happens _during_ dataloading. To not clog the processes, we make use of ONNX for fast CPU-based inferencing.
 
-6. Failures can happen during the captioning process so we need to able to avoid duplication. I have added a simple `ExistsFilter` (refer to `data_processing.py`) filter to filter out the existing images that were serialized before interruptions.
+6. Failures can happen during the captioning process so we need to able to avoid duplication. I have added a simple [`ExistsFilter`](https://github.com/sayakpaul/simple-image-recaptioning/blob/c150ce937cd371930eb67bb0fedac754757e7b23/data_processing.py#L56) filter to filter out the existing images that were serialized before interruptions.
 
 ## Code organization and modification
 
-Ultimately, you'd want to modify the codebase to suit your needs. Below, I provide some pointers.
+Ultimately, you'd want to modify the codebase to suit your needs. 
 
 ```bash
 .
@@ -63,6 +63,8 @@ Ultimately, you'd want to modify the codebase to suit your needs. Below, I provi
 └── utils.py -- misc utilities.
 ```
 
+If you have anything to modify, feel free to go into these files and modify them as per your needs. 
+
 ## Handy tips
 
 * A good chunk of data processing used `PIL`. Simply replace your `Pillow` installation to use [`Pillow-SIMD`](https://github.com/uploadcare/pillow-simd) for better speed.
@@ -72,7 +74,7 @@ Ultimately, you'd want to modify the codebase to suit your needs. Below, I provi
 
 Would really appreciate some contributions too :-)
 
-* Better cache management to skip the images that have already been serialized. 
+* I believe the cache management system could be a bit optimized. It's likely IO bound, currently. Relevant links: [1](https://github.com/sayakpaul/simple-image-recaptioning/blob/c150ce937cd371930eb67bb0fedac754757e7b23/data_processing.py#L56), [2](https://github.com/sayakpaul/simple-image-recaptioning/blob/c150ce937cd371930eb67bb0fedac754757e7b23/data_processing.py#L99). 
 * Better placement of the watermark detection module. I placed it inside the data pipeline because I wasn't sure how to make gel well with `vllm`. But this restricts higher throughputs a bit. 
 * Be aware of [this issue](https://github.com/vllm-project/vllm/issues/8421) and [this fix](https://github.com/vllm-project/vllm/pull/8496) in `vllm`. 
 

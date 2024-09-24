@@ -7,7 +7,6 @@ PngImagePlugin.MAX_TEXT_CHUNK = LARGE_ENOUGH_NUMBER * (1024**2)
 
 import json
 import os
-from huggingface_hub.utils import insecure_hashlib
 import queue
 
 
@@ -19,15 +18,15 @@ def save_results(output_queue, output_dir):
                 break
 
             if len(item) == 4:
-                original_captions, outputs, original_imgs = item
+                original_captions, outputs, original_imgs, img_hashes = item
             else:
-                original_captions, outputs, original_imgs, watermark_scores = item
+                original_captions, outputs, original_imgs, img_hashes, watermark_scores = item
 
             outputs = [o.outputs[0].text for o in outputs]
 
             for i, caption in enumerate(original_captions):
                 original_image = original_imgs[i]
-                image_hash = insecure_hashlib.sha1(original_image.tobytes()).hexdigest()
+                image_hash = img_hashes[i]
                 img_path = os.path.join(output_dir, f"{image_hash}.jpg")
                 original_image.save(img_path)
 

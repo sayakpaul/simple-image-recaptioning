@@ -1,39 +1,14 @@
 import webdataset as wds
 from functools import partial
+from huggingface_hub.utils import insecure_hashlib
 import torch
 import os
-import io
-
-
-def pil_to_bytes(pil_image, format="PNG"):
-    with io.BytesIO() as byte_arr:
-        pil_image.save(byte_arr, format=format)
-        return byte_arr.getvalue()
-
-
-def collate_fn(examples, predictor=None, return_probs=False):
-    inputs = {
-        "original_images": [sample["original_image"] for sample in examples],
-        "original_captions": [example["original_caption"] for example in examples],
-    }
-
-    if predictor is not None:
-        # `num_workers=0` because this is going to be already run under a dataloader. Cannot create workers
-        # under workers.
-        results = predictor.run(inputs["original_images"], num_workers=0, bs=16, pbar=False, return_probs=return_probs)
-        # In this case, we filter out watermarked images.
-        if return_probs and return_probs != "scores":
-            inputs = {key: [item for item, result in zip(inputs[key], results) if result == "clean"] for key in inputs}
-        # In this case, we simply return the scores.
-        elif return_probs == "scores":
-            inputs.update({"watermark_scores": results.tolist()})
-
-    return inputs
 
 
 def preprocess_fn(sample):
     image = sample["jpg"]
-    sample_dict = {"original_image": image}
+    image_hash = insecure_hashlib.sha1(image.tobytes()).hexdigest()
+    sample_dict = {"original_image": image, "img_hash": image_hash}
     if "txt" in sample:
         sample_dict.update({"original_caption": sample["txt"]})
     else:
@@ -69,6 +44,27 @@ class ExistsFilter:
 
     def __call__(self, x):
         return x["img_hash"] not in self.current_training_img_hashes if self.current_training_img_hashes else True
+
+
+def collate_fn(examples, predictor=None, return_probs=False):
+    inputs = {
+        "original_images": [sample["original_image"] for sample in examples],
+        "original_captions": [example["original_caption"] for example in examples],
+        "img_hashes": [example["img_hash"] for example in examples],
+    }
+
+    if predictor is not None:
+        # `num_workers=0` because this is going to be already run under a dataloader. Cannot create workers
+        # under workers.
+        results = predictor.run(inputs["original_images"], num_workers=0, bs=16, pbar=False, return_probs=return_probs)
+        # In this case, we filter out watermarked images.
+        if return_probs and return_probs != "scores":
+            inputs = {key: [item for item, result in zip(inputs[key], results) if result == "clean"] for key in inputs}
+        # In this case, we simply return the scores.
+        elif return_probs == "scores":
+            inputs.update({"watermark_scores": results.tolist()})
+
+    return inputs
 
 
 def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):

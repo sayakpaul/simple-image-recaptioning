@@ -41,15 +41,16 @@ def main(
 
             original_captions = batch["original_captions"]
             original_images = batch["original_images"]
+            image_hashes = batch["img_hashes"]
 
             if detect_watermarks:
                 if detect_watermarks != "scores":
-                    output_queue.put((original_captions, outputs, original_images))
+                    output_queue.put((original_captions, outputs, original_images, image_hashes))
                 else:
                     watermark_scores = batch["watermark_scores"]
-                    output_queue.put((original_captions, outputs, original_images, watermark_scores))
+                    output_queue.put((original_captions, outputs, original_images, image_hashes, watermark_scores))
             else:
-                output_queue.put((original_captions, outputs, original_images))
+                output_queue.put((original_captions, outputs, original_images, image_hashes))
 
     finally:
         output_queue.put(None)

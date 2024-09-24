@@ -1,7 +1,6 @@
 import webdataset as wds
 from functools import partial
 import torch
-from huggingface_hub.utils import insecure_hashlib
 import os
 import io
 
@@ -15,15 +14,17 @@ def pil_to_bytes(pil_image, format="PNG"):
 def collate_fn(examples, predictor=None, return_probs=False):
     inputs = {
         "original_images": [sample["original_image"] for sample in examples],
-        "img_bytes": [example["img_bytes"] for example in examples],
-        "img_hashes": [example["img_hash"] for example in examples],
         "original_captions": [example["original_caption"] for example in examples],
     }
 
     if predictor is not None:
+        # `num_workers=0` because this is going to be already run under a dataloader. Cannot create workers
+        # under workers.
         results = predictor.run(inputs["original_images"], num_workers=0, bs=16, pbar=False, return_probs=return_probs)
+        # In this case, we filter out watermarked images.
         if return_probs and return_probs != "scores":
             inputs = {key: [item for item, result in zip(inputs[key], results) if result == "clean"] for key in inputs}
+        # In this case, we simply return the scores.
         elif return_probs == "scores":
             inputs.update({"watermark_scores": results.tolist()})
 
@@ -32,9 +33,12 @@ def collate_fn(examples, predictor=None, return_probs=False):
 
 def preprocess_fn(sample):
     image = sample["jpg"]
-    img_bytes = pil_to_bytes(image)
-    img_hash = insecure_hashlib.sha1(image.tobytes()).hexdigest()
-    return {"original_image": image, "img_bytes": img_bytes, "img_hash": img_hash, "original_caption": sample["txt"]}
+    sample_dict = {"original_image": image}
+    if "txt" in sample:
+        sample_dict.update({"original_caption": sample["txt"]})
+    else:
+        sample_dict.update({"original_caption": "No caption present."})
+    return sample_dict
 
 
 # Taken from https://github.com/tmbdev-archive/webdataset-imagenet-2/blob/01a4ab54307b9156c527d45b6b171f88623d2dec/imagenet.py#L65.
@@ -74,6 +78,7 @@ def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):
         from wmdetection.pipelines.predictor import WatermarksPredictor
         from onnxruntime import SessionOptions, GraphOptimizationLevel
 
+        # Otherwise, SLURM can cry.
         session_options = SessionOptions()
         session_options.intra_op_num_threads = 1
         session_options.inter_op_num_threads = 1
@@ -82,6 +87,7 @@ def get_dataset(data_path, batch_size, output_dir, detect_watermarks=False):
         transforms = get_watermarks_detection_model(
             "convnext-tiny", fp16=False, device="cpu", return_transforms_only=True
         )
+        # We hard-code the ONNX model path (bad I know).
         predictor = WatermarksPredictor(
             "convnext.onnx", transforms, use_onnx=True, device="cpu", session_options=session_options
         )

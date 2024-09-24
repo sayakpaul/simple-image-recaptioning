@@ -38,17 +38,18 @@ def main(
         for batch in tqdm(dataloader):
             batch["sampling_params"] = sampling_params
             outputs = infer(vllm_engine, batch)
+
             original_captions = batch["original_captions"]
-            img_bytes = batch["img_bytes"]
-            img_hashes = batch["img_hashes"]
+            original_images = batch["original_images"]
+
             if detect_watermarks:
                 if detect_watermarks != "scores":
-                    output_queue.put((original_captions, outputs, img_bytes, img_hashes))
+                    output_queue.put((original_captions, outputs, original_images))
                 else:
                     watermark_scores = batch["watermark_scores"]
-                    output_queue.put((original_captions, outputs, img_bytes, img_hashes, watermark_scores))
+                    output_queue.put((original_captions, outputs, original_images, watermark_scores))
             else:
-                output_queue.put((original_captions, outputs, img_bytes, img_hashes))
+                output_queue.put((original_captions, outputs, original_images))
 
     finally:
         output_queue.put(None)
